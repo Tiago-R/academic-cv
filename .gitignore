@@ -1,0 +1,73 @@
+# Compiled output
+*.pdf
+*.dvi
+*.ps
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.synctex.gz(busy)
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+*.blg
+*.bbl
+
+# Latexmk
+latexmkrc
+
+# MakeIndex
+*.idx
+*.ilg
+*.ind
+
+# Glossaries
+*.glo
+*.gls
+*.glg
+*.ist
+
+# TikZ externalization
+*.tikz
+*.tikzaux
+
+# minted
+_minted*
+*.pyg
+
+# arara
+*.ara
+
+# editor backups
+*~
+*.bak
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# TeXstudio / TeXmaker / VSCode temporary files
+*.synctex.gz
+*.synctex.gz(busy)
+
+# build directories
+/build/
+/out/
+/dist/
+
+# latexindent
+*.indentlog
