@@ -11,10 +11,6 @@ on:
       - main
     tags-ignore:
       - '*'
-    paths:
-      - '**.tex'
-      - '**.cls'
-      - '**.sty'
 
 jobs:
   build:
