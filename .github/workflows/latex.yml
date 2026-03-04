@@ -1,16 +1,16 @@
 name: LaTeX CI
-description: Build PDF with LaTeX and publish it to Github releases
 
 env:
   MAIN_TEX: cv.tex
-  FILENAME: Seignovert-CV
+  FILENAME: TiagoRocha-CV
 
 on:
   push:
-    branches:
-      - main
-    tags-ignore:
-      - '*'
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -20,56 +20,62 @@ jobs:
       image: seignovert/latex-cv
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      # Run twice to include lastpage reference
+      # Run twice to resolve references (e.g., lastpage)
       - name: Build CV
         run: |
           xelatex -jobname=output ${MAIN_TEX}
           xelatex -jobname=output ${MAIN_TEX}
 
       - name: Save PDF
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: pdf
           path: output.pdf
 
   create_release:
-    name: Github Release
+    name: GitHub Release
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up tag
-        id: tag
-        run: |
-            NEW_TAG=$(date +'%Y.%m.%d')
-            LAST_TAG=$(git tag --sort=creatordate | tr '\n' ' ' | sed -e "s/ $NEW_TAG //" | tr ' ' '\n | tail -1')
-            CHANGELOG=$(git log --pretty='format:- %s' $LAST_TAG..HEAD)
-
-            # Multilines escape
-            CHANGELOG="${CHANGELOG//'%'/'%25'}"
-            CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-            CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-
-            echo ::set-env name=RELEASE_TAG::"$NEW_TAG"
-            echo ::set-env name=RELEASE_NAME::"$(date +'%Y/%m/%d') - Curriculum Vitae"
-            echo ::set-env name=RELEASE_BODY::"$CHANGELOG"
-            echo ::set-env name=RELEASE_PDF::"$(date +'%Y')-${FILENAME}.pdf"
-
-      - name: Retreive PDF
-        uses: actions/download-artifact@v1
+      - name: Retrieve PDF
+        uses: actions/download-artifact@v4
         with:
           name: pdf
+          path: .
+
+      - name: Set up release metadata
+        shell: bash
+        run: |
+          NEW_TAG=$(date +'%Y.%m.%d')
+          LAST_TAG=$(git tag --sort=creatordate | grep -v "^${NEW_TAG}$" | tail -n 1 || true)
+
+          if [ -n "$LAST_TAG" ]; then
+            CHANGELOG=$(git log --pretty='format:- %s' "${LAST_TAG}..HEAD")
+          else
+            CHANGELOG=$(git log --pretty='format:- %s' HEAD)
+          fi
+
+          echo "RELEASE_TAG=$NEW_TAG" >> "$GITHUB_ENV"
+          echo "RELEASE_NAME=$(date +'%Y/%m/%d') - Curriculum Vitae" >> "$GITHUB_ENV"
+
+          echo "RELEASE_BODY<<EOF" >> "$GITHUB_ENV"
+          echo "$CHANGELOG" >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+
+          echo "RELEASE_PDF=$(date +'%Y')-${FILENAME}.pdf" >> "$GITHUB_ENV"
+
+      - name: Rename PDF for release asset
+        run: mv output.pdf "${RELEASE_PDF}"
 
       - name: Publish release
-        uses: meeDamian/github-release@2.0
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ env.RELEASE_TAG }}
+          tag_name: ${{ env.RELEASE_TAG }}
           name: ${{ env.RELEASE_NAME }}
           body: ${{ env.RELEASE_BODY }}
-          files: ${{ env.RELEASE_PDF }}:output.pdf
-          allow_override: true
+          files: ${{ env.RELEASE_PDF }}
