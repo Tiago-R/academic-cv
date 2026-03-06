@@ -693,16 +693,18 @@
   \end{center}
 }
 % Define an entry of cv information
-% Usage: \cventry{<position>}{<title>}{<location>}{<date>}{<description>}
-\newcommand*{\cvpublication}[6]{%
+% Usage: \cventry{<position>}{<title>}{<location>}{<date>}{<description>}{Additional Notes}
+\newcommand*{\cvpublication}[7]{%
   \vspace{-1mm}
   \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} C{.75cm} L{\textwidth - 4.25cm} R{3.5cm}}
     \descriptionstyle{#1} &%
     \ifempty{#6}%
-      {\publicationtitlestyle{#2} & \publicationdatestyle{#4} \\
-      &\publicationauthorsstyle{#3} & \publicationjournalstyle{#5}}%
+      {\publicationtitlestyle{#2}\ifthenelse{\equal{#7}{}}{}{, \honortitlestyle{#7}} & \publicationdatestyle{#4} \\
+      &\publicationauthorsstyle{#3} & \publicationjournalstyle{#5} \\
+      &\ifthenelse{\equal{#7}{}}{}{\honortitlestyle{#7}}}%
       {\href{#6}{\publicationtitlestyle{#2}} & \publicationdatestyle{#4} \\
-      &\href{#6}{\publicationauthorsstyle{#3}} & \publicationjournalstyle{#5}}%
+      &\href{#6}{\publicationauthorsstyle{#3}} & \publicationjournalstyle{#5} \\
+      &\ifthenelse{\equal{#7}{}}{}{\honortitlestyle{#7}}}%
   \end{tabular*}%
 }
 
